@@ -6,11 +6,31 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: string | Date): string {
+  const safeDate = safeParseDate(date);
+  if (!safeDate) return 'Invalid Date';
+  
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(date));
+  }).format(safeDate);
+}
+
+// Safe date parsing utility
+export function safeParseDate(date: string | Date | null | undefined): Date | null {
+  if (!date) return null;
+  
+  try {
+    const parsed = new Date(date);
+    // Check if the date is valid
+    if (isNaN(parsed.getTime())) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.warn('Invalid date value:', date);
+    return null;
+  }
 }
 
 export function formatTime(seconds: number): string {

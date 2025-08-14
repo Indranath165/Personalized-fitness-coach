@@ -1,6 +1,7 @@
 'use client';
 
 import { Trophy, TrendingUp, Calendar, Zap } from 'lucide-react';
+import { safeParseDate } from '@/lib/utils';
 
 interface Achievement {
   id: string;
@@ -59,7 +60,7 @@ export function PersonalRecords({ achievements }: PersonalRecordsProps) {
                       {achievement.description}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {new Date(achievement.date).toLocaleDateString()}
+                      {safeParseDate(achievement.date)?.toLocaleDateString() || 'Invalid Date'}
                     </p>
                   </div>
                 </div>

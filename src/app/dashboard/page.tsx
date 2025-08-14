@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { UserProfile, Workout } from '@/types';
-import { getGoalLabel, formatDate, formatDuration } from '@/lib/utils';
+import { getGoalLabel, formatDate, formatDuration, safeParseDate } from '@/lib/utils';
 import { 
   Dumbbell, 
   User, 
@@ -53,14 +53,21 @@ export default function Dashboard() {
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
     // Calculate completed workouts this week
-    const completedThisWeek = workouts.filter(w => 
-      w.is_completed && new Date(w.completed_at || w.created_at) >= oneWeekAgo
-    ).length;
+    const completedThisWeek = workouts.filter(w => {
+      if (!w.is_completed) return false;
+      const workoutDate = safeParseDate(w.completed_at || w.created_at);
+      return workoutDate && workoutDate >= oneWeekAgo;
+    }).length;
 
     // Calculate streaks
     const completedWorkouts = workouts
       .filter(w => w.is_completed)
-      .sort((a, b) => new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime());
+      .map(w => ({
+        ...w,
+        parsedDate: safeParseDate(w.completed_at || w.created_at)
+      }))
+      .filter(w => w.parsedDate) // Only include workouts with valid dates
+      .sort((a, b) => b.parsedDate!.getTime() - a.parsedDate!.getTime());
 
     let currentStreak = 0;
     let longestStreak = 0;
@@ -72,17 +79,20 @@ export default function Dashboard() {
         currentStreak = 1;
         tempStreak = 1;
       } else {
-        const current = new Date(completedWorkouts[i].completed_at || completedWorkouts[i].created_at);
-        const previous = new Date(completedWorkouts[i-1].completed_at || completedWorkouts[i-1].created_at);
-        const daysDiff = Math.abs(current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24);
+        const current = completedWorkouts[i].parsedDate;
+        const previous = completedWorkouts[i-1].parsedDate;
         
-        if (daysDiff <= 2) { // Allow for 1-day gap
-          tempStreak++;
-          if (i < 3) currentStreak = tempStreak; // Only count recent streak
-        } else {
-          longestStreak = Math.max(longestStreak, tempStreak);
-          tempStreak = 1;
-          if (i < 3) currentStreak = 1;
+        if (current && previous) {
+          const daysDiff = Math.abs(current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24);
+          
+          if (daysDiff <= 2) { // Allow for 1-day gap
+            tempStreak++;
+            if (i < 3) currentStreak = tempStreak; // Only count recent streak
+          } else {
+            longestStreak = Math.max(longestStreak, tempStreak);
+            tempStreak = 1;
+            if (i < 3) currentStreak = 1;
+          }
         }
       }
     }
@@ -94,8 +104,8 @@ export default function Dashboard() {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dayName = date.toLocaleDateString('en', { weekday: 'short' });
       const dayWorkouts = workouts.filter(w => {
-        const workoutDate = new Date(w.completed_at || w.created_at);
-        return workoutDate.toDateString() === date.toDateString() && w.is_completed;
+        const workoutDate = safeParseDate(w.completed_at || w.created_at);
+        return workoutDate && workoutDate.toDateString() === date.toDateString() && w.is_completed;
       }).length;
       weeklyChartData.push({ label: dayName, value: dayWorkouts });
     }
