@@ -95,7 +95,7 @@ Return only JSON in this format:
       if (!hfResponse.ok) {
         // If DialoGPT fails, use a fallback template-based generation
         console.log('HF API unavailable, using template-based generation...');
-        const fallbackWorkout = generateTemplateWorkout(userProfile);
+        const fallbackWorkout = await generateTemplateWorkout(userProfile, user.id, supabase);
         return NextResponse.json(fallbackWorkout);
       }
 
@@ -105,7 +105,7 @@ Return only JSON in this format:
       // If HF doesn't return good results, use template fallback
       if (!content || content.length < 50) {
         console.log('HF response insufficient, using template...');
-        const fallbackWorkout = generateTemplateWorkout(userProfile);
+        const fallbackWorkout = await generateTemplateWorkout(userProfile, user.id, supabase);
         return NextResponse.json(fallbackWorkout);
       }
 
@@ -122,13 +122,13 @@ Return only JSON in this format:
         }
       } catch (parseError) {
         console.log('Parsing failed, using template...');
-        const fallbackWorkout = generateTemplateWorkout(userProfile);
+        const fallbackWorkout = await generateTemplateWorkout(userProfile, user.id, supabase);
         return NextResponse.json(fallbackWorkout);
       }
 
       // Validate and process the workout
       if (!workoutData.title || !workoutData.exercises || !Array.isArray(workoutData.exercises)) {
-        const fallbackWorkout = generateTemplateWorkout(userProfile);
+        const fallbackWorkout = await generateTemplateWorkout(userProfile, user.id, supabase);
         return NextResponse.json(fallbackWorkout);
       }
 
@@ -167,27 +167,13 @@ Return only JSON in this format:
 
       console.log('Workout saved successfully:', data?.id);
 
-      const apiResponse: GeminiWorkoutResponse = {
-        title: data.title,
-        description: data.description,
-        exercises: data.exercises.map((ex: any) => ({
-          exercise: ex.name,
-          sets: ex.sets,
-          reps: ex.reps,
-          rest: ex.rest_seconds,
-          notes: ex.notes || '',
-          gif_url: ex.gif_url
-        })),
-        duration: data.duration_minutes,
-        difficulty: data.difficulty_level
-      };
-
-      return NextResponse.json(apiResponse);
+      // Return the full workout object that the frontend expects
+      return NextResponse.json(data);
 
     } catch (error) {
       console.error('HF API error:', error);
       console.log('Using template fallback...');
-      const fallbackWorkout = generateTemplateWorkout(userProfile);
+      const fallbackWorkout = await generateTemplateWorkout(userProfile, user.id, supabase);
       return NextResponse.json(fallbackWorkout);
     }
 
@@ -201,7 +187,7 @@ Return only JSON in this format:
 }
 
 // Template-based workout generation (always works, no API needed)
-function generateTemplateWorkout(userProfile: UserProfile): GeminiWorkoutResponse {
+async function generateTemplateWorkout(userProfile: UserProfile, userId: string, supabase: any): Promise<Workout> {
   console.log('Generating template-based workout...');
   
   const { fitness_goal, experience_level, available_equipment, workout_duration } = userProfile;
@@ -278,18 +264,60 @@ function generateTemplateWorkout(userProfile: UserProfile): GeminiWorkoutRespons
   const difficulty = experience_level === 'beginner' ? 1 : 
                     experience_level === 'intermediate' ? 3 : 5;
 
-  return {
+  // Create the workout data in the format expected by addDemosToExercises
+  const exercisesData = exercises.map((ex: any) => ({
+    exercise: ex.name, // addDemosToExercises expects 'exercise' property
+    sets: ex.sets,
+    reps: ex.reps,
+    rest: ex.rest,
+    notes: `Focus on proper form. Target: ${ex.muscle}`
+  }));
+
+  // Add exercise demonstrations
+  const exercisesWithDemos = await addDemosToExercises(exercisesData);
+
+  // Transform to Exercise interface format for database
+  const finalExercises = exercisesWithDemos.map((ex: any) => ({
+    id: uuidv4(),
+    name: ex.exercise, // Convert 'exercise' to 'name' for Exercise interface
+    sets: ex.sets,
+    reps: ex.reps,
+    rest_seconds: ex.rest,
+    notes: ex.notes,
+    youtube_url: ex.youtube_url,
+    demo_description: ex.demo_description,
+    gif_url: undefined
+  }));
+
+  // Create workout record
+  const workoutId = uuidv4();
+  const workout: Workout = {
+    id: workoutId,
+    user_id: userId,
     title: `${fitness_goal.replace('_', ' ').toUpperCase()} Workout`,
     description: `A ${experience_level} ${fitness_goal.replace('_', ' ')} workout designed for your fitness goals.`,
-    exercises: exercises.map((ex: any) => ({
-      exercise: ex.name,
-      sets: ex.sets,
-      reps: ex.reps,
-      rest: ex.rest,
-      notes: `Focus on proper form. Target: ${ex.muscle}`,
-      gif_url: undefined
-    })),
-    duration: workout_duration,
-    difficulty: difficulty as 1 | 2 | 3 | 4 | 5
+    duration_minutes: workout_duration,
+    difficulty_level: difficulty as 1 | 2 | 3 | 4 | 5,
+    exercises: finalExercises,
+    is_completed: false,
+    completed_at: undefined,
+    created_at: new Date().toISOString()
   };
+
+  console.log('Saving template workout to database...');
+  
+  // Save to database
+  const { data, error: dbError } = await supabase
+    .from('workouts')
+    .insert(workout)
+    .select()
+    .single();
+
+  if (dbError) {
+    console.error('Database error saving template workout:', dbError);
+    throw new Error('Failed to save template workout to database');
+  }
+
+  console.log('Template workout saved successfully:', data?.id);
+  return data;
 }
