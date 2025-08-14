@@ -109,7 +109,7 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
     completedWorkouts.forEach(w => {
       // Extract workout type from title or use a default categorization
       let type = 'General';
-      const title = w.title.toLowerCase();
+      const title = w.title?.toLowerCase() || '';
       if (title.includes('cardio') || title.includes('running') || title.includes('cycling')) type = 'Cardio';
       else if (title.includes('strength') || title.includes('weight') || title.includes('muscle')) type = 'Strength';
       else if (title.includes('flexibility') || title.includes('stretch') || title.includes('yoga')) type = 'Flexibility';

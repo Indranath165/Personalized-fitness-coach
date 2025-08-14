@@ -56,7 +56,7 @@ export function estimateCalories(
   let exerciseCount = 0;
 
   exercises.forEach(exercise => {
-    const exerciseName = exercise.name.toLowerCase();
+    const exerciseName = exercise.name?.toLowerCase() || '';
     let mets = exerciseMETs.default;
 
     // Find matching exercise type
@@ -116,7 +116,7 @@ export function getMuscleGroupsTargeted(exercises: any[]): string[] {
   const targetedGroups = new Set<string>();
 
   exercises.forEach(exercise => {
-    const exerciseName = exercise.name.toLowerCase();
+    const exerciseName = exercise.name?.toLowerCase() || '';
     
     for (const [key, groups] of Object.entries(muscleGroups)) {
       if (exerciseName.includes(key)) {

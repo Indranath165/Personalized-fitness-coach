@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to convert difficulty string to level
 function getDifficultyLevel(difficulty: string): 1 | 2 | 3 | 4 | 5 {
-  switch (difficulty.toLowerCase()) {
+  switch (difficulty?.toLowerCase() || '') {
     case 'beginner': return 1;
     case 'easy': return 2;
     case 'intermediate': return 3;

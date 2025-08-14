@@ -507,7 +507,7 @@ const exerciseYouTubeDatabase: Record<string, ExerciseDemo> = {
 export function getExerciseDemo(exerciseName: string): { youtube_url: string; description: string; simple_description: string } | null {
   if (!exerciseName) return null;
   
-  const normalizedName = exerciseName.toLowerCase().trim();
+  const normalizedName = exerciseName?.toLowerCase().trim() || '';
   console.log('Exercise demo requested for:', normalizedName);
   
   const demo = exerciseYouTubeDatabase[normalizedName];
