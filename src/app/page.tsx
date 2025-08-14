@@ -460,7 +460,7 @@ export default function Home() {
 
           <div className="border-t border-gray-800 dark:border-gray-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 dark:text-gray-500 text-sm">
-              © 2024 FitGenie. All rights reserved.
+              © {new Date().getFullYear()} Personalized Fitness Coach. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 dark:text-gray-500 hover:text-white text-sm transition-colors">Privacy Policy</a>

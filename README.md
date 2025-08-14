@@ -154,11 +154,6 @@ For support, email support@example.com or create an issue in this repository.
 
 ---
 
-**Made with ❤️ by [Indranath165](https://github.com/Indranath165)**
-- npm, yarn, pnpm, or bun package manager
-- Supabase account and project
-- Google AI Studio account for Gemini API access
-
 ## 🔧 Installation & Setup
 
 ### 1. Clone the Repository
