@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { safeParseDate } from '@/lib/utils';
 import { 
   BarChart, 
   TrendingUp, 
@@ -44,9 +45,10 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
     };
 
     const cutoffDate = new Date(now.getTime() - timeFrameMs[timeFrame]);
-    const filteredWorkouts = workouts.filter(w => 
-      new Date(w.created_at) >= cutoffDate
-    );
+    const filteredWorkouts = workouts.filter(w => {
+      const workoutDate = safeParseDate(w.created_at);
+      return workoutDate && workoutDate >= cutoffDate;
+    });
 
     const completedWorkouts = filteredWorkouts.filter(w => w.is_completed);
 
@@ -64,10 +66,13 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
     // Weekly trend
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const previousWeek = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    const thisWeekWorkouts = completedWorkouts.filter(w => new Date(w.created_at) >= lastWeek).length;
+    const thisWeekWorkouts = completedWorkouts.filter(w => {
+      const date = safeParseDate(w.created_at);
+      return date && date >= lastWeek;
+    }).length;
     const lastWeekWorkouts = completedWorkouts.filter(w => {
-      const date = new Date(w.created_at);
-      return date >= previousWeek && date < lastWeek;
+      const date = safeParseDate(w.created_at);
+      return date && date >= previousWeek && date < lastWeek;
     }).length;
     const weeklyTrend = lastWeekWorkouts > 0 ? ((thisWeekWorkouts - lastWeekWorkouts) / lastWeekWorkouts) * 100 : 0;
 
@@ -77,8 +82,8 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
       const monthWorkouts = completedWorkouts.filter(w => {
-        const date = new Date(w.created_at);
-        return date >= monthStart && date <= monthEnd;
+        const date = safeParseDate(w.created_at);
+        return date && date >= monthStart && date <= monthEnd;
       });
       monthlyStats.push({
         month: monthStart.toLocaleDateString('en', { month: 'short' }),
@@ -90,10 +95,14 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
     // Difficulty progression
     const difficultyProgression = completedWorkouts
       .slice(-10)
-      .map(w => ({
-        date: new Date(w.created_at).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
-        difficulty: w.difficulty_level || 3
-      }));
+      .map(w => {
+        const date = safeParseDate(w.created_at);
+        return {
+          date: date ? date.toLocaleDateString('en', { month: 'short', day: 'numeric' }) : 'Invalid Date',
+          difficulty: w.difficulty_level || 3
+        };
+      })
+      .filter(item => item.date !== 'Invalid Date');
 
     // Workout types analysis
     const workoutTypeCount: { [key: string]: number } = {};
@@ -117,7 +126,12 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
 
     // Streak calculation
     const sortedWorkouts = completedWorkouts
-      .sort((a, b) => new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime());
+      .map(w => ({
+        ...w,
+        parsedDate: safeParseDate(w.completed_at || w.created_at)
+      }))
+      .filter(w => w.parsedDate)
+      .sort((a, b) => b.parsedDate!.getTime() - a.parsedDate!.getTime());
     
     let currentStreak = 0;
     let longestStreak = 0;
@@ -128,8 +142,8 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
         currentStreak = 1;
         tempStreak = 1;
       } else {
-        const current = new Date(sortedWorkouts[i].completed_at || sortedWorkouts[i].created_at);
-        const previous = new Date(sortedWorkouts[i-1].completed_at || sortedWorkouts[i-1].created_at);
+        const current = sortedWorkouts[i].parsedDate!;
+        const previous = sortedWorkouts[i-1].parsedDate!;
         const daysDiff = Math.abs(current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24);
         
         if (daysDiff <= 2) {
@@ -145,7 +159,10 @@ export default function AdvancedAnalytics({ workouts, userProfile }: AdvancedAna
     longestStreak = Math.max(longestStreak, tempStreak);
 
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const thisMonthWorkouts = completedWorkouts.filter(w => new Date(w.created_at) >= thisMonth).length;
+    const thisMonthWorkouts = completedWorkouts.filter(w => {
+      const date = safeParseDate(w.created_at);
+      return date && date >= thisMonth;
+    }).length;
 
     return {
       totalWorkouts,

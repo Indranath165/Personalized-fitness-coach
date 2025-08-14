@@ -121,9 +121,10 @@ export function generateAchievements(workouts: any[]): Achievement[] {
   // Weekly streak achievement
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const thisWeekWorkouts = completedWorkouts.filter(w => 
-    new Date(w.completed_at || w.created_at) >= oneWeekAgo
-  );
+  const thisWeekWorkouts = completedWorkouts.filter(w => {
+    const workoutDate = safeParseDate(w.completed_at || w.created_at);
+    return workoutDate && workoutDate >= oneWeekAgo;
+  });
 
   if (thisWeekWorkouts.length >= 3) {
     achievements.push({
@@ -136,5 +137,11 @@ export function generateAchievements(workouts: any[]): Achievement[] {
     });
   }
 
-  return achievements.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return achievements
+    .map(a => ({
+      ...a,
+      parsedDate: safeParseDate(a.date)
+    }))
+    .filter(a => a.parsedDate)
+    .sort((a, b) => b.parsedDate!.getTime() - a.parsedDate!.getTime());
 }

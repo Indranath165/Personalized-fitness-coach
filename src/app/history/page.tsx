@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Workout, ProgressStats } from '@/types';
-import { formatDate, formatDuration } from '@/lib/utils';
+import { formatDate, formatDuration, safeParseDate } from '@/lib/utils';
 import { 
   ArrowLeft, 
   Calendar,
@@ -94,9 +94,13 @@ export default function History() {
     let longestStreak = 0;
     let tempStreak = 0;
     
-    const sortedWorkouts = [...completedWorkouts].sort((a, b) => 
-      new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime()
-    );
+    const sortedWorkouts = [...completedWorkouts]
+      .map(w => ({
+        ...w,
+        parsedDate: safeParseDate(w.completed_at || w.created_at)
+      }))
+      .filter(w => w.parsedDate)
+      .sort((a, b) => b.parsedDate!.getTime() - a.parsedDate!.getTime());
 
     // Calculate streaks (simplified - just consecutive completed workouts)
     for (let i = 0; i < sortedWorkouts.length; i++) {
@@ -127,8 +131,8 @@ export default function History() {
       weekEnd.setHours(23, 59, 59, 999);
 
       const weekWorkouts = completedWorkouts.filter(w => {
-        const workoutDate = new Date(w.completed_at || w.created_at);
-        return workoutDate >= weekStart && workoutDate <= weekEnd;
+        const workoutDate = safeParseDate(w.completed_at || w.created_at);
+        return workoutDate && workoutDate >= weekStart && workoutDate <= weekEnd;
       });
 
       weeks.push({
@@ -144,8 +148,8 @@ export default function History() {
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
 
       const monthWorkouts = completedWorkouts.filter(w => {
-        const workoutDate = new Date(w.completed_at || w.created_at);
-        return workoutDate >= monthStart && workoutDate <= monthEnd;
+        const workoutDate = safeParseDate(w.completed_at || w.created_at);
+        return workoutDate && workoutDate >= monthStart && workoutDate <= monthEnd;
       });
 
       months.push({

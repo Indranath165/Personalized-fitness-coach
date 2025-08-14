@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Brain, Heart, AlertTriangle, Calendar, Target, TrendingUp } from 'lucide-react';
 import { UserProfile, Workout } from '@/types';
+import { safeParseDate } from '@/lib/utils';
 
 interface WellnessInsight {
   type: 'stress' | 'injury' | 'lifestyle' | 'goal' | 'recovery';
@@ -115,13 +116,18 @@ export default function AIWellnessCoach({ userProfile, recentWorkouts, weeklySta
     
     const sortedWorkouts = recentWorkouts
       .filter(w => w.is_completed)
-      .sort((a, b) => new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime());
+      .map(w => ({
+        ...w,
+        parsedDate: safeParseDate(w.completed_at || w.created_at)
+      }))
+      .filter(w => w.parsedDate)
+      .sort((a, b) => b.parsedDate!.getTime() - a.parsedDate!.getTime());
     
     let consecutive = 0;
     const today = new Date();
     
     for (let i = 0; i < sortedWorkouts.length; i++) {
-      const workoutDate = new Date(sortedWorkouts[i].completed_at || sortedWorkouts[i].created_at);
+      const workoutDate = sortedWorkouts[i].parsedDate!;
       const daysDiff = Math.floor((today.getTime() - workoutDate.getTime()) / (1000 * 60 * 60 * 24));
       
       if (daysDiff === i) {
