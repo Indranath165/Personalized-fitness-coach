@@ -205,7 +205,12 @@ export default function Dashboard() {
     setError('');
 
     try {
-      const response = await fetch('/api/generate-workout-ollama', {
+      // Use free AI service for production, Ollama for local development
+      const apiEndpoint = process.env.NODE_ENV === 'production' 
+        ? '/api/generate-workout-free' 
+        : '/api/generate-workout-ollama';
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
