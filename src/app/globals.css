@@ -1,26 +1,477 @@
 @import "tailwindcss";
 
+/* CSS Variables for themes */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4f46e5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #475569;
+  --input: #475569;
+  --ring: #6366f1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Force dark mode styles */
+html.dark {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Dark mode text overrides - more aggressive */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #f8fafc !important;
+}
+
+.dark .text-gray-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode background overrides - more aggressive */
+.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #334155 !important;
+}
+
+/* Glass morphism dark mode fix */
+.dark .glass,
+.dark .backdrop-blur-xl {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: rgba(71, 85, 105, 0.3) !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+/* Force proper background colors */
+.dark body {
+  background-color: #0f172a !important;
+}
+
+/* Custom scrollbar with proper dark mode */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
+/* Enhanced glass morphism with better dark mode */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(71, 85, 105, 0.3) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Fix for animated backgrounds in dark mode */
+.dark .animate-blob {
+  opacity: 0.1 !important;
+}
+
+/* Ensure proper dark mode gradients */
+.dark .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a) !important;
+}
+
+/* Force backdrop-blur containers to be dark */
+.dark [class*="backdrop-blur"] {
+  background: rgba(30, 41, 59, 0.95) !important;
+  color: #f8fafc !important;
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Blob animation */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Custom gradient backgrounds with dark mode support */
+.gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark .gradient-primary {
+  background: linear-gradient(135deg, #4338ca 0%, #581c87 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.dark .gradient-secondary {
+  background: linear-gradient(135deg, #c026d3 0%, #dc2626 100%);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.dark .gradient-success {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+}
+
+/* Dark mode form elements */
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="text"],
+.dark textarea,
+.dark select {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+.dark input[type="email"]::placeholder,
+.dark input[type="password"]::placeholder,
+.dark input[type="text"]::placeholder,
+.dark textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode button overrides */
+.dark button {
+  transition: all 0.2s ease;
+}
+
+/* Ensure proper text contrast in dark mode */
+.dark .text-gray-900 {
+  color: #f8fafc !important;
+}
+
+.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode background overrides */
+.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #334155 !important;
+}
+
+/* Dark mode border overrides */
+.dark .border-gray-200 {
+  border-color: #475569 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #64748b !important;
+}
+
+/* Custom animations for landing page */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Custom utility classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-gradient {
+  background-size: 400% 400%;
+  animation: gradientShift 4s ease infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Custom shadows */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Hero section animations */
+.hero-title {
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.hero-subtitle {
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.hero-buttons {
+  animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+/* Feature cards staggered animation */
+.feature-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+.feature-card:nth-child(4) { animation-delay: 0.4s; }
+.feature-card:nth-child(5) { animation-delay: 0.5s; }
+.feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Interactive elements */
+.interactive {
+  transition: all 0.2s ease-in-out;
+}
+
+.interactive:hover {
+  transform: scale(1.05);
+}
+
+/* Custom focus styles */
+.focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #4f46e5, 0 0 0 4px rgba(79, 70, 229, 0.2);
+}
+
+/* Loading states */
+.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Button hover effects */
+.btn-hover-lift {
+  transition: all 0.3s ease;
+}
+
+.btn-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }

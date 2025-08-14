@@ -1,0 +1,103 @@
+/* Mobile-first responsive improvements */
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 768px) {
+  .workout-card {
+    @apply p-5 min-h-[120px];
+  }
+
+  .stat-card {
+    @apply p-5;
+  }
+
+  .button {
+    @apply min-h-[44px] text-base;
+  }
+
+  /* Better spacing on mobile */
+  .dashboard-grid {
+    @apply gap-4;
+  }
+
+  /* Larger text on mobile for better readability */
+  .mobile-text-lg {
+    @apply text-lg;
+  }
+
+  .mobile-text-base {
+    @apply text-base;
+  }
+
+  /* Better progress bars on mobile */
+  .progress-bar {
+    @apply h-3;
+  }
+
+  /* Enhanced modals for mobile */
+  .modal-content {
+    @apply mx-2 max-h-[95vh];
+  }
+
+  /* Better chart display on mobile */
+  .chart-container {
+    @apply px-4;
+  }
+
+  /* Stack buttons vertically on small screens */
+  .button-group {
+    @apply flex-col space-y-2 space-x-0;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    @apply grid-cols-2;
+  }
+
+  .tablet-text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Enhanced hover states for devices that support hover */
+@media (hover: hover) {
+  .enhanced-hover {
+    @apply hover:scale-105 transition-transform duration-200;
+  }
+
+  .card-hover {
+    @apply hover:shadow-lg transition-shadow duration-200;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .high-contrast {
+    @apply border-2 border-current;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .reduce-motion {
+    @apply transition-none animate-none;
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-slate-800;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-slate-600 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-slate-500;
+}
