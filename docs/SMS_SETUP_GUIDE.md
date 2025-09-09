@@ -56,13 +56,13 @@ You're getting "Unsupported phone provider" because Supabase doesn't have any SM
 
 ## 📞 Phone Number Format for India
 
-Your number `+919932626488` should work perfectly once SMS is configured. The component now handles:
+Your number `+911234567890` should work perfectly once SMS is configured. The component now handles:
 
 ```typescript
 // Supported formats:
-"+919932626488"     // ✅ Full international format
-"919932626488"      // ✅ Will be converted to +919932626488
-"9932626488"        // ❌ Needs country code
+"+911234567890"     // ✅ Full international format
+"911234567890"      // ✅ Will be converted to +911234567890
+"1234567890"        // ❌ Needs country code
 
 // US examples:
 "+15551234567"      // ✅ Full international format
@@ -74,7 +74,7 @@ Your number `+919932626488` should work perfectly once SMS is configured. The co
 
 ### Test with Twilio:
 1. Configure Twilio in Supabase
-2. Try your number: `+919932626488`
+2. Try your number: `+911234567890`
 3. You should receive SMS within 30 seconds
 
 ### Verify Countries Supported:
@@ -162,7 +162,7 @@ Right now, the app shows:
 
 ### "Invalid phone number format":
 - Number format issue
-- **Solution**: Use +919932626488 format
+- **Solution**: Use +911234567890 format
 
 ---
 
